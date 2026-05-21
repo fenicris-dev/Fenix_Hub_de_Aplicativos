@@ -3,314 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fênix | Hub de Aplicativos v2.0</title>
+    <title>Fênix | Hub de Aplicativos v3.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
     <style>
-        body {
-            background: linear-gradient(135deg, #020b3d 0%, #041273 45%, #062a18 100%);
-            background-attachment: fixed;
-            min-height: 100vh;
-        }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
-        ::-webkit-scrollbar-thumb { background: rgba(60,216,154,0.2); border-radius: 99px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(60,216,154,0.35); }
-
-        .glass {
-            background: rgba(4,10,35,0.82);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.07);
-        }
-        .glass-card {
-            background: rgba(255,255,255,0.03);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .app-card { transition: all 0.22s cubic-bezier(0.4,0,0.2,1); }
-        .app-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 14px 30px -8px rgba(60,216,154,0.22);
-            border-color: rgba(60,216,154,0.32) !important;
-        }
-
-        .profile-card { transition: all 0.2s ease; cursor: pointer; }
-        .profile-card:hover { transform: translateY(-5px); }
-        .profile-card:hover .profile-avatar {
-            border-color: #3cd89a !important;
-            box-shadow: 0 0 22px rgba(60,216,154,0.35);
-        }
-
-        .tab-btn { transition: all 0.15s ease; }
-        .tab-btn.active {
-            background: rgba(60,216,154,0.12);
-            color: #3cd89a;
-            border-color: rgba(60,216,154,0.3);
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fadeUp 0.35s ease forwards; }
-
-        @keyframes ping2 {
-            75%, 100% { transform: scale(1.8); opacity: 0; }
-        }
-        .ping2 { animation: ping2 1.2s cubic-bezier(0,0,0.2,1) infinite; }
-
-        .view-hidden { display: none !important; }
-        a { text-decoration: none !important; }
-
-        .status-on  { background: #3cd89a; box-shadow: 0 0 6px rgba(60,216,154,0.7); }
-        .status-off { background: #4b5563; }
-
-        /* Tailwind doesn't have these by default */
-        .border-emerald-5 { border-color: rgba(52,211,153,0.05); }
+        body{background:linear-gradient(135deg,#020b3d 0%,#041273 45%,#062a18 100%);background-attachment:fixed;min-height:100vh;}
+        ::-webkit-scrollbar{width:5px;height:5px;}
+        ::-webkit-scrollbar-track{background:rgba(255,255,255,0.02);}
+        ::-webkit-scrollbar-thumb{background:rgba(60,216,154,0.2);border-radius:99px;}
+        ::-webkit-scrollbar-thumb:hover{background:rgba(60,216,154,0.35);}
+        .glass{background:rgba(4,10,35,0.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);}
+        .glass-card{background:rgba(255,255,255,0.03);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.06);}
+        .app-card{transition:all 0.22s cubic-bezier(0.4,0,0.2,1);}
+        .app-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px -8px rgba(60,216,154,0.22);border-color:rgba(60,216,154,0.32)!important;}
+        .profile-card{transition:all 0.2s ease;cursor:pointer;}
+        .profile-card:hover{transform:translateY(-5px);}
+        .profile-card:hover .profile-avatar{border-color:#3cd89a!important;box-shadow:0 0 22px rgba(60,216,154,0.35);}
+        .tab-btn{transition:all 0.15s ease;}
+        .tab-btn.active{background:rgba(60,216,154,0.12);color:#3cd89a;border-color:rgba(60,216,154,0.3);}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+        .fade-up{animation:fadeUp 0.35s ease forwards;}
+        @keyframes ping2{75%,100%{transform:scale(1.8);opacity:0;}}
+        .ping2{animation:ping2 1.2s cubic-bezier(0,0,0.2,1) infinite;}
+        .view-hidden{display:none!important;}
+        a{text-decoration:none!important;}
+        .status-on{background:#3cd89a;box-shadow:0 0 6px rgba(60,216,154,0.7);}
+        .status-off{background:#4b5563;}
+        @keyframes bounce3{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}}
+        .dot-bounce{animation:bounce3 1.2s ease-in-out infinite;}
     </style>
 </head>
 <body class="text-gray-100 font-sans antialiased">
 
-<!-- ═══════════════════════════════════════════════════════════
-     VIEW: LOGIN
-═══════════════════════════════════════════════════════════ -->
-<div id="viewLogin" class="min-h-screen flex flex-col">
-    <div class="flex-grow flex flex-col items-center justify-center px-4 py-14">
+<!-- LOADING -->
+<div id="loadingOverlay" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center" style="background:linear-gradient(135deg,#020b3d 0%,#041273 45%,#062a18 100%)">
+    <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-400 to-indigo-600 flex items-center justify-center text-white font-black text-3xl shadow-2xl mb-5">F</div>
+    <p class="text-sm text-gray-400 mb-5">Conectando ao Firebase...</p>
+    <div class="flex gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 dot-bounce" style="animation-delay:0ms"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 dot-bounce" style="animation-delay:160ms"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 dot-bounce" style="animation-delay:320ms"></span>
+    </div>
+</div>
 
-        <!-- Logotipo -->
+<!-- VIEW LOGIN -->
+<div id="viewLogin" class="min-h-screen flex flex-col view-hidden">
+    <div class="flex-grow flex flex-col items-center justify-center px-4 py-14">
         <div class="mb-10 text-center fade-up">
-            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-emerald-400 to-indigo-600 flex items-center justify-center text-white font-black text-3xl shadow-2xl shadow-indigo-900/50 relative">
-                F
-                <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 status-on"></span>
-            </div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">
-                Fênix <span class="text-emerald-400 font-light">|</span> Hub de Aplicativos
-            </h1>
+            <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-emerald-400 to-indigo-600 flex items-center justify-center text-white font-black text-3xl shadow-2xl relative">F<span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 status-on"></span></div>
+            <h1 class="text-2xl font-bold text-white tracking-tight">Fênix <span class="text-emerald-400 font-light">|</span> Hub de Aplicativos</h1>
             <p class="text-xs text-gray-500 mt-1.5">Selecione seu perfil para continuar</p>
         </div>
-
-        <!-- Grid de perfis (estilo Netflix) -->
         <div id="loginProfilesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-8 w-full max-w-2xl fade-up"></div>
-
-        <!-- Estado vazio -->
         <div id="loginNoUsers" class="view-hidden glass rounded-2xl p-8 text-center max-w-sm w-full fade-up">
             <p class="text-sm text-white font-semibold mb-1">Nenhum perfil cadastrado</p>
-            <p class="text-xs text-gray-500 leading-relaxed">O administrador precisa criar os perfis de acesso. Entre como administrador para começar.</p>
+            <p class="text-xs text-gray-500 leading-relaxed">Entre como administrador para criar os perfis.</p>
         </div>
-
-        <!-- Botão admin (discreto) -->
         <button onclick="openAdminPasswordModal()" class="mt-4 text-xs text-gray-600 hover:text-emerald-400 transition-colors flex items-center gap-1.5 cursor-pointer fade-up">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
             Acesso Administrativo
         </button>
     </div>
-
-    <footer class="py-4 text-center text-[10px] text-gray-600">
-        © 2026 · Fênix Soluções Tecnológicas · v2.0
-    </footer>
+    <footer class="py-4 text-center text-[10px] text-gray-600">© 2026 · Fênix Soluções Tecnológicas · v3.0</footer>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     VIEW: HUB
-═══════════════════════════════════════════════════════════ -->
+<!-- VIEW HUB -->
 <div id="viewHub" class="view-hidden min-h-screen flex flex-col">
-
-    <!-- HEADER -->
     <header class="glass sticky top-0 z-40 border-b border-white/5 shadow-xl shadow-black/30">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-400 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-inner shadow-black/30 flex-shrink-0">F</div>
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-400 to-indigo-600 flex items-center justify-center text-white font-black text-lg flex-shrink-0">F</div>
                 <div>
-                    <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-2">
-                        Fênix <span class="text-emerald-400 font-light">|</span> Hub de Aplicativos
-                        <span class="text-[9px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/25">v2.0</span>
-                    </h1>
+                    <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-2">Fênix <span class="text-emerald-400 font-light">|</span> Hub de Aplicativos <span class="text-[9px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/25">v3.0</span></h1>
                     <p id="headerSubtitle" class="text-[10px] text-gray-500"></p>
                 </div>
             </div>
-
             <div class="flex items-center gap-2 w-full sm:w-auto">
-                <!-- Busca -->
                 <div class="relative flex-1 sm:w-52">
-                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-3.5 w-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </span>
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><svg class="h-3.5 w-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></span>
                     <input type="text" id="searchBar" placeholder="Buscar... [/]" class="w-full bg-black/40 border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-emerald-400/50 transition-all">
                 </div>
-
-                <!-- Botão Painel ADM (só aparece para admin) -->
-                <button id="adminPanelBtn" onclick="toggleAdminPanel()" class="view-hidden px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
+                <button id="adminPanelBtn" onclick="toggleAdminPanel()" class="view-hidden px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg cursor-pointer flex items-center gap-1.5 shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     <span id="adminPanelBtnTxt">Painel ADM</span>
                 </button>
-
-                <!-- Sair -->
-                <button onclick="logout()" title="Sair" class="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
+                <button onclick="logout()" class="px-3 py-1.5 text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg cursor-pointer flex items-center gap-1.5 shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     <span class="hidden sm:inline">Sair</span>
                 </button>
             </div>
         </div>
     </header>
-
     <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
-
-        <!-- ─── PAINEL ADMINISTRATIVO ─── -->
-        <section id="adminPanel" class="view-hidden mb-6 glass rounded-2xl shadow-2xl overflow-hidden">
-
-            <!-- Abas -->
+        <!-- PAINEL ADM -->
+        <section id="adminPanel" class="view-hidden mb-6 glass rounded-2xl overflow-hidden">
             <div class="flex gap-1 p-3 border-b border-white/5 bg-black/20 flex-wrap">
-                <button class="tab-btn active px-3 py-1.5 text-xs font-semibold rounded-lg border border-transparent cursor-pointer" data-tab="tabApps" onclick="switchAdminTab('tabApps', this)">📦 Aplicativos</button>
-                <button class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-transparent text-gray-400 hover:text-white cursor-pointer" data-tab="tabUsers" onclick="switchAdminTab('tabUsers', this)">👥 Usuários</button>
-                <button class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-transparent text-gray-400 hover:text-white cursor-pointer" data-tab="tabCategories" onclick="switchAdminTab('tabCategories', this)">🏷 Categorias</button>
-                <button class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-transparent text-gray-400 hover:text-white cursor-pointer" data-tab="tabBackup" onclick="switchAdminTab('tabBackup', this)">💾 Backup</button>
+                <button class="tab-btn active px-3 py-1.5 text-xs font-semibold rounded-lg border border-transparent cursor-pointer" data-tab="tabApps" onclick="switchAdminTab('tabApps',this)">📦 Aplicativos</button>
+                <button class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-transparent text-gray-400 hover:text-white cursor-pointer" data-tab="tabUsers" onclick="switchAdminTab('tabUsers',this)">👥 Usuários</button>
+                <button class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-transparent text-gray-400 hover:text-white cursor-pointer" data-tab="tabCategories" onclick="switchAdminTab('tabCategories',this)">🏷 Categorias</button>
+                <button class="tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg border border-transparent text-gray-400 hover:text-white cursor-pointer" data-tab="tabBackup" onclick="switchAdminTab('tabBackup',this)">💾 Backup</button>
             </div>
-
-            <!-- Tab: Aplicativos -->
+            <!-- Tab Apps -->
             <div id="tabApps" class="p-5">
-                <h2 id="appFormTitle" class="text-sm font-bold text-emerald-400 flex items-center gap-2 mb-4">
-                    <span class="w-2 h-2 bg-emerald-400 rounded-full ping2 relative"></span>
-                    Registrar Novo Aplicativo
-                </h2>
+                <h2 id="appFormTitle" class="text-sm font-bold text-emerald-400 flex items-center gap-2 mb-4"><span class="w-2 h-2 bg-emerald-400 rounded-full ping2"></span>Registrar Novo Aplicativo</h2>
                 <form id="appForm" onsubmit="handleAppFormSubmit(event)" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                     <input type="hidden" id="editingAppId">
                     <div class="md:col-span-3">
                         <label class="block text-[10px] text-gray-500 mb-1 font-semibold uppercase tracking-wider">Nome</label>
-                        <div class="flex rounded-lg overflow-hidden border border-white/10 focus-within:border-emerald-400/50 transition-colors bg-black/40">
-                            <span class="bg-white/5 px-2 py-2 text-[10px] text-gray-500 select-none border-r border-white/10 flex items-center font-bold">Fênix |</span>
+                        <div class="flex rounded-lg overflow-hidden border border-white/10 focus-within:border-emerald-400/50 bg-black/40">
+                            <span class="bg-white/5 px-2 py-2 text-[10px] text-gray-500 border-r border-white/10 flex items-center font-bold select-none">Fênix |</span>
                             <input type="text" id="appName" required placeholder="Nome do app" class="w-full bg-transparent px-3 py-2 text-xs text-white focus:outline-none">
                         </div>
                     </div>
                     <div class="md:col-span-3">
                         <label class="block text-[10px] text-gray-500 mb-1 font-semibold uppercase tracking-wider">Descrição</label>
-                        <input type="text" id="appDesc" required placeholder="Descrição curta" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400/50 transition-colors">
+                        <input type="text" id="appDesc" required placeholder="Descrição curta" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400/50">
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-[10px] text-gray-500 mb-1 font-semibold uppercase tracking-wider">Categoria</label>
-                        <select id="appCategory" required class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400/50 transition-colors"></select>
+                        <select id="appCategory" required class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400/50"></select>
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-[10px] text-gray-500 mb-1 font-semibold uppercase tracking-wider">URL</label>
-                        <input type="url" id="appLink" required onblur="autoFetchFavicon(this.value)" placeholder="https://app.com" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400/50 transition-colors">
+                        <input type="url" id="appLink" required onblur="autoFetchFavicon(this.value)" placeholder="https://app.com" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400/50">
                     </div>
                     <div class="md:col-span-2">
                         <label class="block text-[10px] text-gray-500 mb-1 font-semibold uppercase tracking-wider">Ícone URL</label>
-                        <input type="url" id="appIcon" placeholder="Auto via favicon" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400/50 transition-colors">
+                        <input type="url" id="appIcon" placeholder="Auto via favicon" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-400/50">
                     </div>
                     <div class="md:col-span-12 flex justify-between items-center gap-3 pt-1">
-                        <label class="flex items-center gap-2 cursor-pointer text-xs text-gray-400 hover:text-white transition-colors select-none">
-                            <input type="checkbox" id="appActive" checked class="w-3.5 h-3.5 accent-emerald-400">
-                            App ativo (visível aos usuários)
-                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-xs text-gray-400 hover:text-white select-none"><input type="checkbox" id="appActive" checked class="w-3.5 h-3.5 accent-emerald-400">App ativo</label>
                         <div class="flex gap-2">
-                            <button type="button" id="cancelEditBtn" onclick="resetAppForm()" class="hidden bg-white/10 hover:bg-white/15 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all cursor-pointer">Cancelar</button>
-                            <button type="submit" id="submitAppBtn" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-1.5 rounded-lg transition-all cursor-pointer shadow-md shadow-emerald-500/10">Adicionar App +</button>
+                            <button type="button" id="cancelEditBtn" onclick="resetAppForm()" class="hidden bg-white/10 hover:bg-white/15 text-white text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer">Cancelar</button>
+                            <button type="submit" id="submitAppBtn" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-1.5 rounded-lg cursor-pointer">Adicionar App +</button>
                         </div>
                     </div>
                 </form>
             </div>
-
-            <!-- Tab: Usuários -->
+            <!-- Tab Usuários -->
             <div id="tabUsers" class="p-5 view-hidden">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
-                        <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                        Gerenciar Usuários
-                    </h2>
-                    <button onclick="openUserModal()" class="px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg cursor-pointer flex items-center gap-1">
-                        + Novo Usuário
-                    </button>
+                    <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-2"><span class="w-2 h-2 bg-emerald-400 rounded-full"></span>Gerenciar Usuários</h2>
+                    <button onclick="openUserModal()" class="px-3 py-1.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg cursor-pointer">+ Novo Usuário</button>
                 </div>
                 <div id="usersTable" class="space-y-2"></div>
-                <p id="usersEmpty" class="view-hidden text-center text-xs text-gray-600 py-8">Nenhum usuário cadastrado. Crie o primeiro.</p>
+                <p id="usersEmpty" class="view-hidden text-center text-xs text-gray-600 py-8">Nenhum usuário cadastrado.</p>
             </div>
-
-            <!-- Tab: Categorias -->
+            <!-- Tab Categorias -->
             <div id="tabCategories" class="p-5 view-hidden">
-                <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-2 mb-4">
-                    <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                    Gerenciar Categorias
-                </h2>
+                <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-2 mb-4"><span class="w-2 h-2 bg-emerald-400 rounded-full"></span>Gerenciar Categorias</h2>
                 <div class="flex flex-wrap gap-2 mb-4" id="categoriesAdminList"></div>
                 <div class="flex gap-2 max-w-xs">
                     <input type="text" id="newCategoryInput" placeholder="Nova categoria..." class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-400/50">
                     <button onclick="addNewCategory()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer">Adicionar</button>
                 </div>
             </div>
-
-            <!-- Tab: Backup -->
+            <!-- Tab Backup -->
             <div id="tabBackup" class="p-5 view-hidden">
-                <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-2 mb-4">
-                    <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
-                    Backup e Restauração
-                </h2>
+                <h2 class="text-sm font-bold text-emerald-400 flex items-center gap-2 mb-4"><span class="w-2 h-2 bg-emerald-400 rounded-full"></span>Backup e Restauração</h2>
                 <div class="flex flex-wrap gap-3 mb-4">
-                    <button onclick="exportData()" class="px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg cursor-pointer flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        Exportar Backup
-                    </button>
-                    <label class="px-4 py-2 text-xs font-bold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg cursor-pointer flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/></svg>
-                        Importar Backup
-                        <input type="file" id="importFile" onchange="importData(event)" class="hidden" accept=".json">
-                    </label>
-                    <button onclick="openChangePasswordModal()" class="px-4 py-2 text-xs font-bold bg-white/10 hover:bg-white/15 text-white border border-white/10 rounded-lg cursor-pointer flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-                        Alterar Senha ADM
-                    </button>
+                    <button onclick="exportData()" class="px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg cursor-pointer flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Exportar Backup</button>
+                    <label class="px-4 py-2 text-xs font-bold bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg cursor-pointer flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"/></svg>Importar Backup<input type="file" id="importFile" onchange="importData(event)" class="hidden" accept=".json"></label>
+                    <button onclick="openChangePasswordModal()" class="px-4 py-2 text-xs font-bold bg-white/10 hover:bg-white/15 text-white border border-white/10 rounded-lg cursor-pointer flex items-center gap-2"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>Alterar Senha ADM</button>
                 </div>
-                <p class="text-[10px] text-gray-600 leading-relaxed max-w-sm">O backup inclui apps, usuários, categorias e configurações.<br><strong class="text-gray-500">A senha do ADM NÃO é exportada</strong> por segurança.</p>
+                <p class="text-[10px] text-gray-600 leading-relaxed max-w-sm">O backup inclui apps, usuários e categorias.<br><strong class="text-gray-500">A senha ADM é gerenciada pelo Firebase Auth</strong> e não é exportada.</p>
             </div>
         </section>
-
-        <!-- Abas de categorias -->
         <div id="categoryTabsContainer" class="mb-5 flex flex-wrap gap-2"></div>
-
-        <!-- Grid de apps -->
         <div id="appsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
-
-        <!-- Estado vazio -->
         <div id="emptyState" class="view-hidden text-center py-20 glass rounded-2xl max-w-md mx-auto">
-            <div class="w-14 h-14 mx-auto mb-4 bg-white/5 flex items-center justify-center rounded-full text-gray-600">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-            </div>
+            <div class="w-14 h-14 mx-auto mb-4 bg-white/5 flex items-center justify-center rounded-full text-gray-600"><svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
             <p class="text-sm font-semibold text-white">Nenhum aplicativo encontrado</p>
             <p class="text-[11px] text-gray-500 mt-1">Tente outra busca ou categoria.</p>
         </div>
     </main>
-
-    <footer class="border-t border-white/5 glass py-4 mt-8 shadow-inner">
+    <footer class="border-t border-white/5 glass py-4 mt-8">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-gray-600">
             <div class="flex items-center gap-2 flex-wrap justify-center">
                 <span>© 2026</span>
-                <a href="https://wa.me/5579999680880?text=Olá%20Cristiano%2C%20acessei%20o%20Hub%20de%20Aplicativos!" target="_blank" class="hover:text-emerald-400 transition-colors text-white font-semibold flex items-center gap-1">
-                    Cristiano Fênix
-                    <svg class="w-3 h-3 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.151-3.654c1.6.95 3.347 1.452 5.142 1.453 5.51.004 9.993-4.478 9.997-9.991.002-2.67-1.03-5.18-2.905-7.059C16.567 2.87 14.07 1.835 11.999 1.835c-5.517 0-10.003 4.48-10.008 9.993-.002 1.899.501 3.75 1.457 5.389l-1.014 3.7 3.784-.992z"/></svg>
-                </a>
+                <a href="https://wa.me/5579999680880?text=Ol%C3%A1%20Cristiano%2C%20acessei%20o%20Hub%20de%20Aplicativos!" target="_blank" class="hover:text-emerald-400 text-white font-semibold flex items-center gap-1">Cristiano Fênix <svg class="w-3 h-3 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.151-3.654c1.6.95 3.347 1.452 5.142 1.453 5.51.004 9.993-4.478 9.997-9.991.002-2.67-1.03-5.18-2.905-7.059C16.567 2.87 14.07 1.835 11.999 1.835c-5.517 0-10.003 4.48-10.008 9.993-.002 1.899.501 3.75 1.457 5.389l-1.014 3.7 3.784-.992z"/></svg></a>
                 <span class="text-white/20">|</span>
-                <span>©</span>
-                <a href="https://www.instagram.com/fenixsolucoestecnologicas" target="_blank" class="text-emerald-500 hover:text-emerald-400 transition-colors font-semibold">Fênix Soluções Tecnológicas</a>
+                <a href="https://www.instagram.com/fenixsolucoestecnologicas" target="_blank" class="text-emerald-500 hover:text-emerald-400 font-semibold">Fênix Soluções Tecnológicas</a>
             </div>
             <span class="text-[10px]">[/] Buscar · [Esc] Limpar</span>
         </div>
     </footer>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     MODALS
-═══════════════════════════════════════════════════════════ -->
-
-<!-- Modal: PIN do usuário -->
+<!-- MODAIS -->
 <div id="pinModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 view-hidden">
     <div class="glass max-w-xs w-full rounded-2xl p-6 border border-white/10 shadow-2xl fade-up">
         <div class="text-center mb-5">
@@ -318,8 +201,7 @@
             <h3 id="pinNameEl" class="font-bold text-white text-sm"></h3>
             <p class="text-[10px] text-gray-500 mt-0.5">Digite seu PIN de acesso</p>
         </div>
-        <input type="password" id="pinInput" placeholder="••••••" maxlength="8" onkeydown="if(event.key==='Enter')submitPin()"
-            class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-400 mb-4 text-center tracking-[0.5em]">
+        <input type="password" id="pinInput" placeholder="••••••" maxlength="8" onkeydown="if(event.key==='Enter')submitPin()" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-400 mb-4 text-center tracking-[0.5em]">
         <div class="flex gap-2">
             <button onclick="closePinModal()" class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold cursor-pointer">Cancelar</button>
             <button onclick="submitPin()" class="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold cursor-pointer">Entrar</button>
@@ -327,43 +209,31 @@
     </div>
 </div>
 
-<!-- Modal: Senha do Admin -->
 <div id="adminPasswordModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 view-hidden">
     <div class="glass max-w-xs w-full rounded-2xl p-6 border border-white/10 shadow-2xl fade-up">
         <div class="flex items-center gap-2 mb-1">
             <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
             <h3 class="font-bold text-white text-sm">Acesso Administrativo</h3>
         </div>
-        <p class="text-[10px] text-gray-500 mb-4 ml-6">Insira a senha para entrar no painel de gerenciamento.</p>
-        <input type="password" id="adminPassInput" placeholder="Senha do administrador" onkeydown="if(event.key==='Enter')submitAdminPassword()"
-            class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-400 mb-4 tracking-widest text-center">
+        <p class="text-[10px] text-gray-500 mb-4 ml-6">Autenticação via Firebase Auth.</p>
+        <div class="space-y-2 mb-4">
+            <input type="email" id="adminEmailInput" placeholder="E-mail do administrador" onkeydown="if(event.key==='Enter')submitAdminPassword()" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-400 placeholder-gray-600">
+            <input type="password" id="adminPassInput" placeholder="Senha" onkeydown="if(event.key==='Enter')submitAdminPassword()" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-400 tracking-widest text-center">
+        </div>
         <div class="flex gap-2">
             <button onclick="closeAdminPasswordModal()" class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold cursor-pointer">Sair</button>
-            <button onclick="submitAdminPassword()" class="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold cursor-pointer">Entrar</button>
+            <button id="adminLoginBtn" onclick="submitAdminPassword()" class="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold cursor-pointer">Entrar</button>
         </div>
     </div>
 </div>
 
-<!-- Modal: Alterar Senha ADM -->
 <div id="changePassModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 view-hidden">
     <div class="glass max-w-xs w-full rounded-2xl p-6 border border-white/10 shadow-2xl">
-        <h3 class="font-bold text-white text-sm mb-4 flex items-center gap-2">
-            <svg class="w-4 h-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-            Alterar Senha do Administrador
-        </h3>
+        <h3 class="font-bold text-white text-sm mb-4 flex items-center gap-2"><svg class="w-4 h-4 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>Alterar Senha do Administrador</h3>
         <div class="space-y-3 mb-4">
-            <div>
-                <label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Senha atual</label>
-                <input type="password" id="cpCurrent" placeholder="••••••" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400 tracking-widest">
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Nova senha</label>
-                <input type="password" id="cpNew" placeholder="••••••" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400 tracking-widest">
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Confirmar nova senha</label>
-                <input type="password" id="cpConfirm" placeholder="••••••" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400 tracking-widest">
-            </div>
+            <div><label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Senha atual</label><input type="password" id="cpCurrent" placeholder="••••••" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400 tracking-widest"></div>
+            <div><label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Nova senha</label><input type="password" id="cpNew" placeholder="Mín. 6 caracteres" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400 tracking-widest"></div>
+            <div><label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Confirmar nova senha</label><input type="password" id="cpConfirm" placeholder="••••••" class="w-full bg-black/60 border border-white/15 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400 tracking-widest"></div>
         </div>
         <div class="flex gap-2">
             <button onclick="closeChangePasswordModal()" class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold cursor-pointer">Cancelar</button>
@@ -372,43 +242,25 @@
     </div>
 </div>
 
-<!-- Modal: Criar/Editar Usuário -->
 <div id="userModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 view-hidden">
     <div class="glass max-w-md w-full rounded-2xl p-6 border border-white/10 shadow-2xl">
-        <h3 id="userModalTitle" class="font-bold text-white text-sm mb-4 flex items-center gap-2">
-            <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
-            Novo Usuário
-        </h3>
+        <h3 id="userModalTitle" class="font-bold text-white text-sm mb-4 flex items-center gap-2"><span class="w-2 h-2 bg-emerald-400 rounded-full"></span>Novo Usuário</h3>
         <input type="hidden" id="editingUserId">
         <div class="space-y-3 mb-4">
-            <div>
-                <label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Nome completo</label>
-                <input type="text" id="inputUserName" placeholder="Ex: João Silva" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400/50">
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">PIN de acesso</label>
-                <input type="text" id="inputUserPin" placeholder="4 a 8 dígitos" maxlength="8" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400/50 tracking-widest">
-                <p id="pinHint" class="text-[10px] text-gray-600 mt-1">Deixe em branco para manter o PIN atual ao editar.</p>
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Aplicativos permitidos</label>
-                <div id="userAppsCheckboxes" class="max-h-40 overflow-y-auto space-y-1.5 p-3 bg-black/30 rounded-lg border border-white/5"></div>
-            </div>
+            <div><label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Nome completo</label><input type="text" id="inputUserName" placeholder="Ex: João Silva" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400/50"></div>
+            <div><label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">PIN de acesso</label><input type="text" id="inputUserPin" placeholder="4 a 8 dígitos" maxlength="8" class="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-400/50 tracking-widest"><p id="pinHint" class="text-[10px] text-gray-600 mt-1">Deixe em branco para manter o PIN atual.</p></div>
+            <div><label class="text-[10px] text-gray-500 font-semibold uppercase tracking-wider block mb-1">Aplicativos permitidos</label><div id="userAppsCheckboxes" class="max-h-40 overflow-y-auto space-y-1.5 p-3 bg-black/30 rounded-lg border border-white/5"></div></div>
         </div>
         <div class="flex gap-2">
             <button onclick="closeUserModal()" class="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold cursor-pointer">Cancelar</button>
-            <button onclick="saveUser()" class="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold cursor-pointer">Salvar Usuário</button>
+            <button onclick="saveUser()" id="saveUserBtn" class="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold cursor-pointer">Salvar Usuário</button>
         </div>
     </div>
 </div>
 
-<!-- Modal: Confirmação -->
 <div id="confirmModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 z-50 view-hidden">
     <div class="glass max-w-sm w-full rounded-2xl p-6 border border-white/10 shadow-2xl">
-        <h3 class="font-bold text-white text-sm mb-2 flex items-center gap-2">
-            <svg class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-            Confirmar Ação
-        </h3>
+        <h3 class="font-bold text-white text-sm mb-2 flex items-center gap-2"><svg class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Confirmar Ação</h3>
         <p id="confirmText" class="text-xs text-gray-400 leading-relaxed mb-5"></p>
         <div class="flex justify-end gap-2">
             <button onclick="closeConfirmModal(false)" class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-semibold cursor-pointer">Cancelar</button>
@@ -417,74 +269,105 @@
     </div>
 </div>
 
-<!-- Toast -->
 <div id="toast" class="fixed bottom-5 right-5 translate-y-20 opacity-0 pointer-events-none transition-all duration-300 z-50 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl glass border border-emerald-500/20 text-xs max-w-xs">
     <span class="w-2 h-2 rounded-full flex-shrink-0" id="toastLed"></span>
     <span id="toastMsg" class="font-medium text-white"></span>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════════════════════ -->
 <script>
 "use strict";
 
-// ┌─────────────────────────────────────────────────────────┐
-// │  DATA SERVICE  —  Camada de abstração de dados          │
-// │                                                         │
-// │  🔥 FIREBASE MIGRATION GUIDE:                           │
-// │  Substitua cada método pelo equivalente Firestore:      │
-// │                                                         │
-// │  getApps()  →  getDocs(collection(db, 'apps'))          │
-// │  setApps()  →  batch write no Firestore                 │
-// │  getUsers() →  getDocs(collection(db, 'users'))         │
-// │  etc.                                                   │
-// │                                                         │
-// │  Auth (PIN/senha) → Firebase Authentication             │
-// │  submitPin()      → signInWithCustomToken               │
-// │  submitAdmin()    → signInWithEmailAndPassword          │
-// └─────────────────────────────────────────────────────────┘
+// ════════════════════════════════════════════════
+// FIREBASE — Inicialização com suas credenciais
+// ════════════════════════════════════════════════
+const firebaseConfig = {
+    apiKey:            "AIzaSyCr-09EUiw46bw4w-EcM5fa6eNadocT0Tk",
+    authDomain:        "hub-de-aplicativos.firebaseapp.com",
+    projectId:         "hub-de-aplicativos",
+    storageBucket:     "hub-de-aplicativos.firebasestorage.app",
+    messagingSenderId: "454162071741",
+    appId:             "1:454162071741:web:e2c7766e1dfcf3565a77d4",
+    measurementId:     "G-5QPY1GWHH7"
+};
+firebase.initializeApp(firebaseConfig);
+const db        = firebase.firestore();
+const auth      = firebase.auth();
+const analytics = firebase.analytics();
+
+// ════════════════════════════════════════════════
+// DATA SERVICE — Toda persistência via Firestore
+// ════════════════════════════════════════════════
 const DS = {
-    getApps()        { return JSON.parse(localStorage.getItem('fenix_apps')       || '[]');  },
-    setApps(d)       { localStorage.setItem('fenix_apps',       JSON.stringify(d));           },
-    getUsers()       { return JSON.parse(localStorage.getItem('fenix_users')      || '[]');  },
-    setUsers(d)      { localStorage.setItem('fenix_users',      JSON.stringify(d));           },
-    getCategories()  { return JSON.parse(localStorage.getItem('fenix_categories') || '[]');  },
-    setCategories(d) { localStorage.setItem('fenix_categories', JSON.stringify(d));           },
-    getConfig()      { return JSON.parse(localStorage.getItem('fenix_config')     || '{}');  },
-    setConfig(d)     { localStorage.setItem('fenix_config',     JSON.stringify(d));           },
+    async loadApps() {
+        const snap = await db.collection('apps').orderBy('name').get();
+        return snap.docs.map(d => ({ ...d.data(), _docId: d.id }));
+    },
+    async saveApp(app) {
+        await db.collection('apps').doc(String(app.id)).set(app);
+    },
+    async removeApp(id) {
+        await db.collection('apps').doc(String(id)).delete();
+    },
+    async incrementClick(id) {
+        await db.collection('apps').doc(String(id)).update({
+            clicks: firebase.firestore.FieldValue.increment(1)
+        });
+    },
+    async loadUsers() {
+        const snap = await db.collection('users').orderBy('name').get();
+        return snap.docs.map(d => d.data());
+    },
+    async saveUser(user) {
+        await db.collection('users').doc(String(user.id)).set(user);
+    },
+    async removeUser(id) {
+        await db.collection('users').doc(String(id)).delete();
+    },
+    async loadSettings() {
+        const doc = await db.collection('config').doc('settings').get();
+        return doc.exists ? doc.data() : null;
+    },
+    async saveSettings(data) {
+        await db.collection('config').doc('settings').set(data, { merge: true });
+    }
 };
 
-// ─── ESTADO GLOBAL ────────────────────────────────────────
+// ════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ════════════════════════════════════════════════
 const S = {
-    currentUser:      null,   // { id, name, role: 'admin'|'user', apps: [] }
+    currentUser:      null,
     apps:             [],
     users:            [],
     categories:       [],
-    config:           {},
     selectedCategory: 'Todos',
     adminPanelOpen:   false,
-    pendingLoginId:   null,   // userId aguardando PIN
+    pendingLoginId:   null,
 };
-
-let confirmCallback  = null;
-let searchDebounce   = null;
-
-// ─── CORES DOS AVATARES ───────────────────────────────────
+const DEFAULT_CATEGORIES = ['Todos','Suporte','Vendas','Financeiro','Interno'];
 const AVATAR_COLORS = [
     'from-emerald-500 to-teal-700',
     'from-indigo-500 to-purple-700',
-    'from-rose-500   to-pink-700',
-    'from-amber-500  to-orange-700',
-    'from-cyan-500   to-blue-700',
+    'from-rose-500 to-pink-700',
+    'from-amber-500 to-orange-700',
+    'from-cyan-500 to-blue-700',
     'from-violet-500 to-fuchsia-700',
 ];
+let confirmCallback = null;
+let searchDebounce  = null;
 
-// ─── INICIALIZAÇÃO ────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    loadAllData();
-
-    // Atalhos de teclado
+// ════════════════════════════════════════════════
+// INICIALIZAÇÃO
+// ════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+    showLoading(true);
+    try {
+        await loadAllData();
+    } catch(e) {
+        console.error(e);
+        showToast('Erro ao conectar ao Firebase. Verifique as Security Rules.', 'error');
+    }
+    showLoading(false);
     document.addEventListener('keydown', e => {
         if (e.key === '/' && !['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) {
             e.preventDefault();
@@ -496,55 +379,62 @@ document.addEventListener('DOMContentLoaded', () => {
             closeAllModals();
         }
     });
-
-    // Busca com debounce (evita re-render a cada tecla)
     document.getElementById('searchBar').addEventListener('input', () => {
         clearTimeout(searchDebounce);
         searchDebounce = setTimeout(renderApps, 200);
     });
-
+    const saved = localStorage.getItem('fenix_admin_email');
+    if (saved) document.getElementById('adminEmailInput').value = saved;
     showView('viewLogin');
     renderLoginProfiles();
 });
 
-function loadAllData() {
-    S.apps       = DS.getApps();
-    S.users      = DS.getUsers();
-    S.categories = DS.getCategories();
-    S.config     = DS.getConfig();
-
-    // Dados padrão no primeiro acesso
-    if (!S.categories.length) {
-        S.categories = ['Todos', 'Suporte', 'Vendas', 'Financeiro', 'Interno'];
-        DS.setCategories(S.categories);
-    }
-    if (!S.config.adminPassword) {
-        S.config.adminPassword = 'fenix2026'; // senha padrão inicial
-        DS.setConfig(S.config);
-    }
-    if (!S.apps.length) {
-        S.apps = [
-            { id: 1, name: 'Fênix | Calculadora CLT',    desc: 'Simulador de faturamento e rescisões.',   category: 'Financeiro', link: 'https://github.com', icon: '', clicks: 12, active: true },
-            { id: 2, name: 'Fênix | Atendimento Express', desc: 'Ferramentas de comunicação da equipe.',   category: 'Suporte',    link: 'https://github.com', icon: '', clicks: 24, active: true },
-            { id: 3, name: 'Fênix | CRM',                 desc: 'Gestão de contratos e novos leads.',      category: 'Vendas',     link: 'https://github.com', icon: '', clicks: 8,  active: true },
-        ];
-        DS.setApps(S.apps);
-    }
+function showLoading(on) {
+    document.getElementById('loadingOverlay').classList.toggle('view-hidden', !on);
 }
 
-// ─── GERENCIAMENTO DE VIEWS ───────────────────────────────
+async function loadAllData() {
+    const [appsData, usersData, settings] = await Promise.all([
+        DS.loadApps(),
+        DS.loadUsers(),
+        DS.loadSettings()
+    ]);
+    S.apps  = appsData;
+    S.users = usersData;
+    if (settings && settings.categories) {
+        S.categories = settings.categories;
+    } else {
+        S.categories = DEFAULT_CATEGORIES;
+        await DS.saveSettings({ categories: DEFAULT_CATEGORIES, version: '3.0' });
+    }
+    if (!S.apps.length) await seedDefaultApps();
+}
+
+async function seedDefaultApps() {
+    const defaults = [
+        { id: 1, name: 'Fênix | Calculadora CLT',    desc: 'Simulador de faturamento e rescisões.', category: 'Financeiro', link: 'https://github.com', icon: '', clicks: 0, active: true },
+        { id: 2, name: 'Fênix | Atendimento Express', desc: 'Ferramentas de comunicação da equipe.',  category: 'Suporte',    link: 'https://github.com', icon: '', clicks: 0, active: true },
+        { id: 3, name: 'Fênix | CRM',                 desc: 'Gestão de contratos e novos leads.',     category: 'Vendas',     link: 'https://github.com', icon: '', clicks: 0, active: true },
+    ];
+    const batch = db.batch();
+    defaults.forEach(app => batch.set(db.collection('apps').doc(String(app.id)), app));
+    await batch.commit();
+    S.apps = defaults;
+}
+
+// ════════════════════════════════════════════════
+// VIEWS
+// ════════════════════════════════════════════════
 function showView(id) {
-    ['viewLogin', 'viewHub'].forEach(v =>
+    ['viewLogin','viewHub'].forEach(v =>
         document.getElementById(v).classList.toggle('view-hidden', v !== id)
     );
 }
 
-// ─── TELA DE LOGIN / PERFIS ───────────────────────────────
 function renderLoginProfiles() {
     const grid  = document.getElementById('loginProfilesGrid');
     const empty = document.getElementById('loginNoUsers');
     grid.innerHTML = '';
-
     if (!S.users.length) {
         grid.classList.add('view-hidden');
         empty.classList.remove('view-hidden');
@@ -552,52 +442,43 @@ function renderLoginProfiles() {
     }
     grid.classList.remove('view-hidden');
     empty.classList.add('view-hidden');
-
     S.users.forEach((user, i) => {
-        const color   = AVATAR_COLORS[i % AVATAR_COLORS.length];
-        const initial = user.name.charAt(0).toUpperCase();
-
-        const card = document.createElement('div');
+        const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+        const card  = document.createElement('div');
         card.className = 'profile-card flex flex-col items-center gap-2.5 p-4 glass-card rounded-2xl';
         card.onclick   = () => openPinModal(user.id);
         card.innerHTML = `
-            <div class="profile-avatar w-16 h-16 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-2xl font-black text-white shadow-lg border-2 border-transparent transition-all duration-200">${sanitize(initial)}</div>
+            <div class="profile-avatar w-16 h-16 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-2xl font-black text-white shadow-lg border-2 border-transparent transition-all">${sanitize(user.name.charAt(0).toUpperCase())}</div>
             <span class="text-sm font-semibold text-white text-center leading-tight">${sanitize(user.name)}</span>
         `;
         grid.appendChild(card);
     });
 }
 
-// ─── LOGIN USUÁRIO (PIN) ──────────────────────────────────
+// ════════════════════════════════════════════════
+// LOGIN PIN
+// ════════════════════════════════════════════════
 function openPinModal(userId) {
     const user = S.users.find(u => u.id === userId);
     if (!user) return;
-
-    const i      = S.users.findIndex(u => u.id === userId);
-    const color  = AVATAR_COLORS[i % AVATAR_COLORS.length];
-    const initial = user.name.charAt(0).toUpperCase();
-
-    const avatarEl = document.getElementById('pinAvatarEl');
-    avatarEl.className = `w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-2xl font-black text-white shadow-lg border-2 border-transparent`;
-    avatarEl.textContent = initial;
+    const i     = S.users.findIndex(u => u.id === userId);
+    const color = AVATAR_COLORS[i % AVATAR_COLORS.length];
+    const av    = document.getElementById('pinAvatarEl');
+    av.className = `w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center text-2xl font-black text-white shadow-lg border-2 border-transparent`;
+    av.textContent = user.name.charAt(0).toUpperCase();
     document.getElementById('pinNameEl').textContent = user.name;
     document.getElementById('pinInput').value = '';
-
     S.pendingLoginId = userId;
     document.getElementById('pinModal').classList.remove('view-hidden');
     setTimeout(() => document.getElementById('pinInput').focus(), 120);
 }
-
 function closePinModal() {
     document.getElementById('pinModal').classList.add('view-hidden');
     S.pendingLoginId = null;
 }
-
 function submitPin() {
-    // 🔥 FIREBASE: substituir por signInWithCustomToken ou verificação via Cloud Function
     const user = S.users.find(u => u.id === S.pendingLoginId);
     if (!user) return;
-
     const pin = document.getElementById('pinInput').value;
     if (pin !== user.pin) {
         showToast('PIN incorreto. Tente novamente.', 'error');
@@ -611,600 +492,477 @@ function submitPin() {
     showToast(`Bem-vindo(a), ${user.name}! 👋`);
 }
 
-// ─── LOGIN ADMIN ──────────────────────────────────────────
+// ════════════════════════════════════════════════
+// LOGIN ADMIN (Firebase Auth)
+// ════════════════════════════════════════════════
 function openAdminPasswordModal() {
     document.getElementById('adminPassInput').value = '';
     document.getElementById('adminPasswordModal').classList.remove('view-hidden');
-    setTimeout(() => document.getElementById('adminPassInput').focus(), 120);
+    setTimeout(() => document.getElementById('adminEmailInput').focus(), 120);
 }
-
 function closeAdminPasswordModal() {
     document.getElementById('adminPasswordModal').classList.add('view-hidden');
 }
-
-function submitAdminPassword() {
-    // 🔥 FIREBASE: substituir por Firebase Auth (admin@fenix.com + senha)
-    const val = document.getElementById('adminPassInput').value;
-    if (val !== S.config.adminPassword) {
-        showToast('Senha incorreta!', 'error');
-        return;
+async function submitAdminPassword() {
+    const email = document.getElementById('adminEmailInput').value.trim();
+    const pass  = document.getElementById('adminPassInput').value;
+    if (!email) { showToast('Informe o e-mail.', 'error'); return; }
+    if (!pass)  { showToast('Informe a senha.', 'error');  return; }
+    const btn = document.getElementById('adminLoginBtn');
+    btn.textContent = 'Autenticando...';
+    btn.disabled    = true;
+    try {
+        await auth.signInWithEmailAndPassword(email, pass);
+        localStorage.setItem('fenix_admin_email', email);
+        S.currentUser = { id: 0, name: 'Administrador', role: 'admin', apps: [] };
+        closeAdminPasswordModal();
+        enterHub();
+        showToast('Painel administrativo ativo. 🔐');
+    } catch(err) {
+        const isWrong = ['auth/invalid-credential','auth/wrong-password','auth/user-not-found'].includes(err.code);
+        showToast(isWrong ? 'E-mail ou senha incorretos.' : 'Erro: ' + err.message, 'error');
+    } finally {
+        btn.textContent = 'Entrar';
+        btn.disabled    = false;
     }
-    S.currentUser = { id: 0, name: 'Administrador', role: 'admin', apps: [] };
-    closeAdminPasswordModal();
-    enterHub();
-    showToast('Painel administrativo ativo.');
 }
 
-// ─── ENTRAR NO HUB ────────────────────────────────────────
+// ════════════════════════════════════════════════
+// HUB
+// ════════════════════════════════════════════════
 function enterHub() {
     const isAdmin = S.currentUser.role === 'admin';
-
     document.getElementById('headerSubtitle').textContent = isAdmin
         ? 'Sessão administrativa ativa'
-        : `Olá, ${S.currentUser.name} — ${S.currentUser.apps.length} app(s) disponível(is)`;
-
+        : `Olá, ${S.currentUser.name} — ${(S.currentUser.apps||[]).length} app(s) disponível(is)`;
     document.getElementById('adminPanelBtn').classList.toggle('view-hidden', !isAdmin);
-
     showView('viewHub');
     S.selectedCategory = 'Todos';
-
-    if (isAdmin) {
-        renderCategoriesSelect();
-        renderCategoriesAdminList();
-        renderUsersTable();
-    }
-
+    if (isAdmin) { renderCategoriesSelect(); renderCategoriesAdminList(); renderUsersTable(); }
     renderCategoryTabs();
     renderApps();
 }
-
 function logout() {
-    S.currentUser     = null;
-    S.adminPanelOpen  = false;
+    if (auth.currentUser) auth.signOut().catch(console.error);
+    S.currentUser    = null;
+    S.adminPanelOpen = false;
     document.getElementById('adminPanel').classList.add('view-hidden');
     showView('viewLogin');
     renderLoginProfiles();
 }
-
-// ─── PAINEL ADMIN ─────────────────────────────────────────
 function toggleAdminPanel() {
     S.adminPanelOpen = !S.adminPanelOpen;
     document.getElementById('adminPanel').classList.toggle('view-hidden', !S.adminPanelOpen);
     document.getElementById('adminPanelBtnTxt').textContent = S.adminPanelOpen ? 'Fechar Painel' : 'Painel ADM';
     if (S.adminPanelOpen) document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth' });
 }
-
 function switchAdminTab(tabId, btn) {
-    ['tabApps','tabUsers','tabCategories','tabBackup'].forEach(id => {
-        document.getElementById(id).classList.add('view-hidden');
-    });
-    document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('active');
-        b.classList.add('text-gray-400');
-    });
+    ['tabApps','tabUsers','tabCategories','tabBackup'].forEach(id => document.getElementById(id).classList.add('view-hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.classList.add('text-gray-400'); });
     document.getElementById(tabId).classList.remove('view-hidden');
     btn.classList.add('active');
     btn.classList.remove('text-gray-400');
 }
 
-// ─── GERENCIAMENTO DE USUÁRIOS ────────────────────────────
+// ════════════════════════════════════════════════
+// USUÁRIOS
+// ════════════════════════════════════════════════
 function renderUsersTable() {
-    const container = document.getElementById('usersTable');
-    const empty     = document.getElementById('usersEmpty');
-    container.innerHTML = '';
-
-    if (!S.users.length) {
-        empty.classList.remove('view-hidden');
-        return;
-    }
-    empty.classList.add('view-hidden');
-
+    const c = document.getElementById('usersTable');
+    const e = document.getElementById('usersEmpty');
+    c.innerHTML = '';
+    if (!S.users.length) { e.classList.remove('view-hidden'); return; }
+    e.classList.add('view-hidden');
     S.users.forEach((user, i) => {
-        const color     = AVATAR_COLORS[i % AVATAR_COLORS.length];
-        const initial   = user.name.charAt(0).toUpperCase();
-        const appNames  = user.apps
-            .map(id => S.apps.find(a => a.id === id)?.name?.replace('Fênix | ', '') || '')
-            .filter(Boolean);
-
+        const color    = AVATAR_COLORS[i % AVATAR_COLORS.length];
+        const appNames = (user.apps||[]).map(id => S.apps.find(a=>a.id===id)?.name?.replace('Fênix | ','')||'').filter(Boolean);
         const row = document.createElement('div');
         row.className = 'flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-3 bg-black/20 rounded-xl border border-white/5 hover:border-white/10 transition-colors';
         row.innerHTML = `
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center text-sm font-black text-white shadow flex-shrink-0">${sanitize(initial)}</div>
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br ${color} flex items-center justify-center text-sm font-black text-white shadow flex-shrink-0">${sanitize(user.name.charAt(0).toUpperCase())}</div>
                 <div>
                     <p class="text-sm font-semibold text-white">${sanitize(user.name)}</p>
                     <p class="text-[10px] text-gray-600">${appNames.length ? sanitize(appNames.join(' · ')) : 'Nenhum app liberado'}</p>
                 </div>
             </div>
             <div class="flex gap-2 ml-11 sm:ml-0">
-                <button onclick="openUserModal(${user.id})" class="px-2.5 py-1 text-[10px] bg-white/5 hover:bg-white/10 text-gray-400 hover:text-yellow-400 rounded-lg border border-white/5 transition-all cursor-pointer font-semibold">Editar</button>
-                <button onclick="deleteUser(${user.id})" class="px-2.5 py-1 text-[10px] bg-white/5 hover:bg-red-500/15 text-gray-400 hover:text-red-400 rounded-lg border border-white/5 transition-all cursor-pointer font-semibold">Remover</button>
-            </div>
-        `;
-        container.appendChild(row);
+                <button onclick="openUserModal(${user.id})" class="px-2.5 py-1 text-[10px] bg-white/5 hover:bg-white/10 text-gray-400 hover:text-yellow-400 rounded-lg border border-white/5 cursor-pointer font-semibold">Editar</button>
+                <button onclick="deleteUser(${user.id})" class="px-2.5 py-1 text-[10px] bg-white/5 hover:bg-red-500/15 text-gray-400 hover:text-red-400 rounded-lg border border-white/5 cursor-pointer font-semibold">Remover</button>
+            </div>`;
+        c.appendChild(row);
     });
 }
-
 function openUserModal(userId = null) {
     const user = userId ? S.users.find(u => u.id === userId) : null;
-
-    document.getElementById('editingUserId').value  = userId || '';
-    document.getElementById('inputUserName').value  = user ? user.name : '';
-    document.getElementById('inputUserPin').value   = '';
+    document.getElementById('editingUserId').value = userId || '';
+    document.getElementById('inputUserName').value = user ? user.name : '';
+    document.getElementById('inputUserPin').value  = '';
     document.getElementById('pinHint').classList.toggle('view-hidden', !userId);
-    document.getElementById('userModalTitle').innerHTML =
-        `<span class="w-2 h-2 bg-emerald-400 rounded-full"></span> ${userId ? 'Editar Usuário' : 'Novo Usuário'}`;
-
-    // Checkboxes de apps
+    document.getElementById('userModalTitle').innerHTML = `<span class="w-2 h-2 bg-emerald-400 rounded-full"></span> ${userId ? 'Editar Usuário' : 'Novo Usuário'}`;
     const cb = document.getElementById('userAppsCheckboxes');
     cb.innerHTML = '';
-    const activeApps = S.apps.filter(a => a.active !== false);
-
-    if (!activeApps.length) {
-        cb.innerHTML = '<p class="text-[10px] text-gray-600">Nenhum app ativo cadastrado.</p>';
-    } else {
-        activeApps.forEach(app => {
-            const checked  = user ? user.apps.includes(app.id) : false;
-            const short    = app.name.replace('Fênix | ', '');
-            const lbl      = document.createElement('label');
-            lbl.className  = 'flex items-center gap-2 cursor-pointer text-xs text-gray-400 hover:text-white transition-colors';
-            lbl.innerHTML  = `
-                <input type="checkbox" value="${app.id}" ${checked ? 'checked' : ''} class="w-3.5 h-3.5 accent-emerald-400 flex-shrink-0">
-                <span>${sanitize(short)}</span>
-                <span class="text-[9px] text-gray-600 bg-white/5 px-1.5 rounded ml-auto">${sanitize(app.category)}</span>
-            `;
-            cb.appendChild(lbl);
-        });
-    }
-
+    const active = S.apps.filter(a => a.active !== false);
+    if (!active.length) { cb.innerHTML = '<p class="text-[10px] text-gray-600">Nenhum app ativo.</p>'; }
+    else active.forEach(app => {
+        const checked = user ? (user.apps||[]).includes(app.id) : false;
+        const lbl = document.createElement('label');
+        lbl.className = 'flex items-center gap-2 cursor-pointer text-xs text-gray-400 hover:text-white transition-colors';
+        lbl.innerHTML = `<input type="checkbox" value="${app.id}" ${checked?'checked':''} class="w-3.5 h-3.5 accent-emerald-400 flex-shrink-0"><span>${sanitize(app.name.replace('Fênix | ',''))}</span><span class="text-[9px] text-gray-600 bg-white/5 px-1.5 rounded ml-auto">${sanitize(app.category)}</span>`;
+        cb.appendChild(lbl);
+    });
     document.getElementById('userModal').classList.remove('view-hidden');
     setTimeout(() => document.getElementById('inputUserName').focus(), 100);
 }
-
-function closeUserModal() {
-    document.getElementById('userModal').classList.add('view-hidden');
-}
-
-function saveUser() {
+function closeUserModal() { document.getElementById('userModal').classList.add('view-hidden'); }
+async function saveUser() {
     const userId = document.getElementById('editingUserId').value;
     const name   = document.getElementById('inputUserName').value.trim();
     const pin    = document.getElementById('inputUserPin').value.trim();
-
-    if (!name) { showToast('Informe o nome do usuário.', 'error'); return; }
-
-    const selectedApps = Array.from(
-        document.querySelectorAll('#userAppsCheckboxes input[type="checkbox"]:checked')
-    ).map(cb => parseInt(cb.value));
-
-    if (userId) {
-        // Editar
-        const idx = S.users.findIndex(u => u.id == userId);
-        if (idx === -1) return;
-        S.users[idx].name = name;
-        S.users[idx].apps = selectedApps;
-        if (pin) {
-            if (!/^\d{4,8}$/.test(pin)) { showToast('PIN inválido: use 4 a 8 dígitos numéricos.', 'error'); return; }
-            S.users[idx].pin = pin;
+    if (!name) { showToast('Informe o nome.', 'error'); return; }
+    const selectedApps = Array.from(document.querySelectorAll('#userAppsCheckboxes input:checked')).map(cb => parseInt(cb.value));
+    const btn = document.getElementById('saveUserBtn');
+    btn.disabled = true; btn.textContent = 'Salvando...';
+    try {
+        if (userId) {
+            const idx = S.users.findIndex(u => u.id == userId);
+            if (idx === -1) return;
+            S.users[idx].name = name; S.users[idx].apps = selectedApps;
+            if (pin) {
+                if (!/^\d{4,8}$/.test(pin)) { showToast('PIN: 4 a 8 dígitos.', 'error'); return; }
+                S.users[idx].pin = pin;
+            }
+            await DS.saveUser(S.users[idx]);
+            showToast(`"${name}" atualizado!`);
+        } else {
+            if (!/^\d{4,8}$/.test(pin)) { showToast('PIN: 4 a 8 dígitos.', 'error'); return; }
+            const nu = { id: Date.now(), name, pin, apps: selectedApps, active: true };
+            await DS.saveUser(nu); S.users.push(nu);
+            showToast(`"${name}" criado!`);
         }
-        showToast(`Usuário "${name}" atualizado!`);
-    } else {
-        // Criar
-        if (!/^\d{4,8}$/.test(pin)) { showToast('PIN inválido: use 4 a 8 dígitos numéricos.', 'error'); return; }
-        S.users.push({ id: Date.now(), name, pin, apps: selectedApps });
-        showToast(`Usuário "${name}" criado!`);
-    }
-
-    DS.setUsers(S.users);
-    closeUserModal();
-    renderUsersTable();
-    renderLoginProfiles();
+        closeUserModal(); renderUsersTable(); renderLoginProfiles();
+    } catch(err) { showToast('Erro ao salvar.', 'error'); console.error(err); }
+    finally { btn.disabled = false; btn.textContent = 'Salvar Usuário'; }
 }
-
 function deleteUser(userId) {
     const user = S.users.find(u => u.id === userId);
     if (!user) return;
-    openConfirmModal(`Remover o usuário "${user.name}" permanentemente?`, () => {
-        S.users = S.users.filter(u => u.id !== userId);
-        DS.setUsers(S.users);
-        renderUsersTable();
-        renderLoginProfiles();
-        showToast('Usuário removido.');
+    openConfirmModal(`Remover "${user.name}" permanentemente?`, async () => {
+        try {
+            await DS.removeUser(userId);
+            S.users = S.users.filter(u => u.id !== userId);
+            renderUsersTable(); renderLoginProfiles();
+            showToast('Usuário removido.');
+        } catch { showToast('Erro ao remover.', 'error'); }
     });
 }
 
-// ─── GERENCIAMENTO DE APPS ────────────────────────────────
-function handleAppFormSubmit(e) {
+// ════════════════════════════════════════════════
+// APPS
+// ════════════════════════════════════════════════
+async function handleAppFormSubmit(e) {
     e.preventDefault();
-    const appId = document.getElementById('editingAppId').value;
-
-    let rawName = document.getElementById('appName').value.trim();
-    rawName = rawName.replace(/^fê?nix\s*\|\s*/i, '').trim();
+    const appId    = document.getElementById('editingAppId').value;
+    let rawName    = document.getElementById('appName').value.trim().replace(/^fê?nix\s*\|\s*/i,'').trim();
     const fullName = `Fênix | ${rawName}`;
-
     const desc     = document.getElementById('appDesc').value.trim();
     const category = document.getElementById('appCategory').value;
     const link     = document.getElementById('appLink').value.trim();
     const icon     = document.getElementById('appIcon').value.trim();
     const active   = document.getElementById('appActive').checked;
-
-    if (appId) {
-        const idx = S.apps.findIndex(a => a.id == appId);
-        if (idx !== -1) Object.assign(S.apps[idx], { name: fullName, desc, category, link, icon, active });
-        showToast('Aplicativo atualizado!');
-    } else {
-        S.apps.push({ id: Date.now(), name: fullName, desc, category, link, icon, active, clicks: 0 });
-        showToast('Aplicativo adicionado!');
-    }
-
-    DS.setApps(S.apps);
-    resetAppForm();
-    renderCategoryTabs();
-    renderApps();
+    const btn      = document.getElementById('submitAppBtn');
+    btn.disabled = true; btn.textContent = 'Salvando...';
+    try {
+        if (appId) {
+            const idx = S.apps.findIndex(a => a.id == appId);
+            if (idx !== -1) { Object.assign(S.apps[idx], { name: fullName, desc, category, link, icon, active }); await DS.saveApp(S.apps[idx]); }
+            showToast('App atualizado!');
+        } else {
+            const na = { id: Date.now(), name: fullName, desc, category, link, icon, active, clicks: 0 };
+            await DS.saveApp(na); S.apps.push(na);
+            showToast('App adicionado!');
+        }
+        resetAppForm(); renderCategoryTabs(); renderApps();
+    } catch(err) { showToast('Erro ao salvar app.', 'error'); console.error(err); }
+    finally { btn.disabled = false; }
 }
-
 function editApp(id) {
     const app = S.apps.find(a => a.id === id);
     if (!app) return;
-
     document.getElementById('editingAppId').value = app.id;
-    document.getElementById('appName').value      = app.name.replace('Fênix | ', '');
+    document.getElementById('appName').value      = app.name.replace('Fênix | ','');
     document.getElementById('appDesc').value      = app.desc;
     document.getElementById('appCategory').value  = app.category;
     document.getElementById('appLink').value      = app.link;
     document.getElementById('appIcon').value      = app.icon;
     document.getElementById('appActive').checked  = app.active !== false;
-
-    document.getElementById('appFormTitle').innerHTML =
-        `<span class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span> Editando: ${sanitize(app.name)}`;
+    document.getElementById('appFormTitle').innerHTML = `<span class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span> Editando: ${sanitize(app.name)}`;
     const btn = document.getElementById('submitAppBtn');
     btn.textContent = 'Atualizar App';
     btn.className   = 'bg-yellow-500 hover:bg-yellow-400 text-slate-950 font-bold text-xs px-4 py-1.5 rounded-lg cursor-pointer';
     document.getElementById('cancelEditBtn').classList.remove('hidden');
-
     switchAdminTab('tabApps', document.querySelector('[data-tab="tabApps"]'));
     if (!S.adminPanelOpen) toggleAdminPanel();
     else document.getElementById('adminPanel').scrollIntoView({ behavior: 'smooth' });
 }
-
 function resetAppForm() {
     document.getElementById('appForm').reset();
     document.getElementById('editingAppId').value = '';
     document.getElementById('appActive').checked  = true;
-    document.getElementById('appFormTitle').innerHTML =
-        '<span class="w-2 h-2 bg-emerald-400 rounded-full ping2 relative"></span> Registrar Novo Aplicativo';
+    document.getElementById('appFormTitle').innerHTML = '<span class="w-2 h-2 bg-emerald-400 rounded-full ping2"></span> Registrar Novo Aplicativo';
     const btn = document.getElementById('submitAppBtn');
     btn.textContent = 'Adicionar App +';
-    btn.className   = 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-1.5 rounded-lg cursor-pointer shadow-md shadow-emerald-500/10';
+    btn.className   = 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-1.5 rounded-lg cursor-pointer';
     document.getElementById('cancelEditBtn').classList.add('hidden');
 }
-
 function deleteApp(id) {
     const app = S.apps.find(a => a.id === id);
     if (!app) return;
-    openConfirmModal(`Remover "${app.name}" do Hub permanentemente?`, () => {
-        S.apps = S.apps.filter(a => a.id !== id);
-        DS.setApps(S.apps);
-        renderCategoryTabs();
-        renderApps();
-        showToast('App removido.');
+    openConfirmModal(`Remover "${app.name}" permanentemente?`, async () => {
+        try { await DS.removeApp(id); S.apps = S.apps.filter(a => a.id !== id); renderCategoryTabs(); renderApps(); showToast('App removido.'); }
+        catch { showToast('Erro ao remover.', 'error'); }
     });
 }
-
-function toggleAppActive(id) {
+async function toggleAppActive(id) {
     const idx = S.apps.findIndex(a => a.id === id);
     if (idx === -1) return;
     S.apps[idx].active = !S.apps[idx].active;
-    DS.setApps(S.apps);
-    renderApps();
-    showToast(S.apps[idx].active ? 'App ativado e visível.' : 'App desativado e ocultado.');
+    try { await DS.saveApp(S.apps[idx]); renderApps(); showToast(S.apps[idx].active ? 'App ativado.' : 'App desativado.'); }
+    catch { showToast('Erro.', 'error'); }
 }
-
 function registerClick(id) {
-    // Atualiza contador sem re-renderizar o grid inteiro
     const idx = S.apps.findIndex(a => a.id === id);
     if (idx !== -1) {
-        S.apps[idx].clicks = (S.apps[idx].clicks || 0) + 1;
-        DS.setApps(S.apps);
+        S.apps[idx].clicks = (S.apps[idx].clicks||0)+1;
         const el = document.querySelector(`[data-click-counter="${id}"]`);
         if (el) el.textContent = S.apps[idx].clicks;
+        DS.incrementClick(id).catch(console.error);
     }
 }
-
 function autoFetchFavicon(url) {
-    const iconInput = document.getElementById('appIcon');
-    if (url && !iconInput.value) {
-        try {
-            const parsed  = new URL(url);
-            iconInput.value = `${parsed.origin}/favicon.ico`;
-            showToast('Favicon detectado automaticamente.');
-        } catch {}
-    }
+    const inp = document.getElementById('appIcon');
+    if (url && !inp.value) { try { inp.value = new URL(url).origin + '/favicon.ico'; showToast('Favicon detectado.'); } catch {} }
 }
 
-// ─── RENDERIZAÇÃO DO GRID ─────────────────────────────────
+// ════════════════════════════════════════════════
+// RENDER GRID
+// ════════════════════════════════════════════════
 function renderApps() {
     const grid    = document.getElementById('appsGrid');
     const empty   = document.getElementById('emptyState');
     const query   = document.getElementById('searchBar').value.toLowerCase().trim();
     const isAdmin = S.currentUser?.role === 'admin';
-
-    let visible = S.apps;
-
-    // Usuários normais: só veem apps liberados e ativos
+    let visible   = S.apps;
     if (!isAdmin) {
-        const permitted = S.currentUser?.apps || [];
-        visible = visible.filter(a => permitted.includes(a.id) && a.active !== false);
+        const perm = S.currentUser?.apps||[];
+        visible = visible.filter(a => perm.includes(a.id) && a.active !== false);
     }
-
-    if (S.selectedCategory !== 'Todos') {
-        visible = visible.filter(a => a.category === S.selectedCategory);
-    }
-
-    if (query) {
-        visible = visible.filter(a =>
-            a.name.toLowerCase().includes(query) ||
-            a.desc.toLowerCase().includes(query) ||
-            a.category.toLowerCase().includes(query)
-        );
-    }
-
+    if (S.selectedCategory !== 'Todos') visible = visible.filter(a => a.category === S.selectedCategory);
+    if (query) visible = visible.filter(a => a.name.toLowerCase().includes(query) || a.desc.toLowerCase().includes(query) || a.category.toLowerCase().includes(query));
     grid.innerHTML = '';
-
-    if (!visible.length) {
-        empty.classList.remove('view-hidden');
-        grid.classList.add('view-hidden');
-        return;
-    }
-    empty.classList.add('view-hidden');
-    grid.classList.remove('view-hidden');
-
+    if (!visible.length) { empty.classList.remove('view-hidden'); grid.classList.add('view-hidden'); return; }
+    empty.classList.add('view-hidden'); grid.classList.remove('view-hidden');
     visible.forEach(app => {
-        const initial    = app.name.replace('Fênix | ', '').charAt(0).toUpperCase();
+        const initial    = app.name.replace('Fênix | ','').charAt(0).toUpperCase();
         const isInactive = app.active === false;
-
-        const iconHTML = app.icon
+        const iconHTML   = app.icon
             ? `<img src="${app.icon}" class="w-9 h-9 rounded-lg object-contain bg-white/5 p-1 border border-white/10 flex-shrink-0" alt="" onerror="this.outerHTML='<div class=\\'w-9 h-9 bg-emerald-950/60 border border-emerald-500/25 text-emerald-400 flex items-center justify-center font-bold text-sm rounded-lg flex-shrink-0\\'>${sanitize(initial)}</div>'">`
             : `<div class="w-9 h-9 bg-emerald-950/60 border border-emerald-500/25 text-emerald-400 flex items-center justify-center font-bold text-sm rounded-lg flex-shrink-0">${sanitize(initial)}</div>`;
-
-        // Controles admin (visíveis ao passar o mouse)
-        const adminHTML = isAdmin ? `
+        const adminHTML  = isAdmin ? `
             <div class="absolute top-2.5 right-2.5 flex gap-1 z-10 bg-black/60 p-1 rounded-lg border border-white/5 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onclick="toggleAppActive(${app.id})" title="${isInactive ? 'Ativar' : 'Desativar'}" class="p-1 rounded hover:bg-white/10 cursor-pointer">
-                    <div class="w-2 h-2 rounded-full ${isInactive ? 'status-off' : 'status-on'}"></div>
-                </button>
-                <button onclick="editApp(${app.id})" title="Editar" class="p-1 text-gray-500 hover:text-yellow-400 transition-colors cursor-pointer">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                </button>
-                <button onclick="deleteApp(${app.id})" title="Remover" class="p-1 text-gray-500 hover:text-red-400 transition-colors cursor-pointer">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </button>
+                <button onclick="toggleAppActive(${app.id})" title="${isInactive?'Ativar':'Desativar'}" class="p-1 rounded hover:bg-white/10 cursor-pointer"><div class="w-2 h-2 rounded-full ${isInactive?'status-off':'status-on'}"></div></button>
+                <button onclick="editApp(${app.id})" title="Editar" class="p-1 text-gray-500 hover:text-yellow-400 cursor-pointer"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                <button onclick="deleteApp(${app.id})" title="Remover" class="p-1 text-gray-500 hover:text-red-400 cursor-pointer"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
             </div>` : '';
-
         const card = document.createElement('div');
-        card.className = `app-card relative p-4 bg-slate-950/70 border ${isInactive ? 'border-white/5 opacity-55' : 'border-white/8'} rounded-2xl flex flex-col justify-between group shadow-md backdrop-blur-sm`;
+        card.className = `app-card relative p-4 bg-slate-950/70 border ${isInactive?'border-white/5 opacity-55':'border-white/8'} rounded-2xl flex flex-col justify-between group shadow-md backdrop-blur-sm`;
         card.innerHTML = `
             ${adminHTML}
-            ${isInactive ? '<span class="absolute top-2.5 left-2.5 text-[9px] bg-gray-800/90 text-gray-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Inativo</span>' : ''}
+            ${isInactive?'<span class="absolute top-2.5 left-2.5 text-[9px] bg-gray-800/90 text-gray-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Inativo</span>':''}
             <div>
                 <div class="flex justify-between items-center mb-3">
-                    <span class="text-[9px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/15 px-2 py-0.5 rounded-md">${sanitize(app.category || 'Geral')}</span>
-                    <span class="text-[9px] text-gray-600 flex items-center gap-1" title="Acessos">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        <span data-click-counter="${app.id}">${app.clicks || 0}</span>
-                    </span>
+                    <span class="text-[9px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/15 px-2 py-0.5 rounded-md">${sanitize(app.category||'Geral')}</span>
+                    <span class="text-[9px] text-gray-600 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg><span data-click-counter="${app.id}">${app.clicks||0}</span></span>
                 </div>
                 <div class="flex items-start gap-3 mb-4">
                     ${iconHTML}
-                    <div class="flex-1 overflow-hidden ${isAdmin ? 'pr-6' : ''}">
+                    <div class="flex-1 overflow-hidden ${isAdmin?'pr-6':''}">
                         <h3 class="text-xs font-bold text-white group-hover:text-emerald-300 transition-colors truncate">${sanitize(app.name)}</h3>
                         <p class="text-[11px] text-gray-500 line-clamp-2 mt-0.5 leading-relaxed">${sanitize(app.desc)}</p>
                     </div>
                 </div>
             </div>
-            <a href="${app.link}" target="_blank" rel="noopener noreferrer" onclick="registerClick(${app.id})"
-               class="w-full text-center text-[11px] bg-white/5 hover:bg-emerald-500 hover:text-slate-950 text-gray-400 font-bold py-2 px-3 rounded-xl border border-white/10 hover:border-emerald-400 transition-all flex items-center justify-center gap-1.5">
-                Acessar
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-            </a>
-        `;
+            <a href="${app.link}" target="_blank" rel="noopener noreferrer" onclick="registerClick(${app.id})" class="w-full text-center text-[11px] bg-white/5 hover:bg-emerald-500 hover:text-slate-950 text-gray-400 font-bold py-2 px-3 rounded-xl border border-white/10 hover:border-emerald-400 transition-all flex items-center justify-center gap-1.5">Acessar<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></a>`;
         grid.appendChild(card);
     });
 }
 
-// ─── ABAS DE CATEGORIAS ───────────────────────────────────
+// ════════════════════════════════════════════════
+// CATEGORIAS
+// ════════════════════════════════════════════════
 function renderCategoryTabs() {
     const container = document.getElementById('categoryTabsContainer');
     container.innerHTML = '';
-    const isAdmin   = S.currentUser?.role === 'admin';
-    const permitted = S.currentUser?.apps || [];
-
+    const isAdmin = S.currentUser?.role === 'admin';
+    const perm    = S.currentUser?.apps||[];
     S.categories.forEach(cat => {
         let count;
-        if (isAdmin) {
-            count = cat === 'Todos' ? S.apps.length : S.apps.filter(a => a.category === cat).length;
-        } else {
-            const ua = S.apps.filter(a => permitted.includes(a.id) && a.active !== false);
-            count = cat === 'Todos' ? ua.length : ua.filter(a => a.category === cat).length;
-        }
-
-        if (!isAdmin && count === 0 && cat !== 'Todos') return;
-
+        if (isAdmin) { count = cat==='Todos' ? S.apps.length : S.apps.filter(a=>a.category===cat).length; }
+        else { const ua=S.apps.filter(a=>perm.includes(a.id)&&a.active!==false); count=cat==='Todos'?ua.length:ua.filter(a=>a.category===cat).length; }
+        if (!isAdmin && count===0 && cat!=='Todos') return;
         const isActive = S.selectedCategory === cat;
-        const btn      = document.createElement('button');
-        btn.className  = `px-3.5 py-1.5 rounded-full text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-            isActive
-            ? 'bg-emerald-500 text-slate-950 border border-emerald-400 shadow-md shadow-emerald-500/15'
-            : 'bg-black/30 hover:bg-black/40 text-gray-500 hover:text-white border border-white/5 hover:border-white/10'
-        }`;
-        btn.innerHTML = `<span>${sanitize(cat)}</span><span class="text-[9px] px-1.5 rounded-full ${isActive ? 'bg-black/20 text-slate-950' : 'bg-white/8 text-gray-600'}">${count}</span>`;
-        btn.onclick   = () => { S.selectedCategory = cat; renderCategoryTabs(); renderApps(); };
+        const btn = document.createElement('button');
+        btn.className = `px-3.5 py-1.5 rounded-full text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${isActive?'bg-emerald-500 text-slate-950 border border-emerald-400':'bg-black/30 hover:bg-black/40 text-gray-500 hover:text-white border border-white/5 hover:border-white/10'}`;
+        btn.innerHTML = `<span>${sanitize(cat)}</span><span class="text-[9px] px-1.5 rounded-full ${isActive?'bg-black/20 text-slate-950':'bg-white/8 text-gray-600'}">${count}</span>`;
+        btn.onclick   = () => { S.selectedCategory=cat; renderCategoryTabs(); renderApps(); };
         container.appendChild(btn);
     });
 }
-
 function renderCategoriesSelect() {
     const sel = document.getElementById('appCategory');
     sel.innerHTML = '';
-    S.categories.filter(c => c !== 'Todos').forEach(cat => {
+    S.categories.filter(c=>c!=='Todos').forEach(cat => {
         const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        opt.className = 'bg-slate-900 text-white';
+        opt.value = cat; opt.textContent = cat; opt.className = 'bg-slate-900 text-white';
         sel.appendChild(opt);
     });
 }
-
 function renderCategoriesAdminList() {
-    const container = document.getElementById('categoriesAdminList');
-    container.innerHTML = '';
-    S.categories.filter(c => c !== 'Todos').forEach(cat => {
+    const c = document.getElementById('categoriesAdminList');
+    c.innerHTML = '';
+    S.categories.filter(x=>x!=='Todos').forEach(cat => {
         const tag = document.createElement('div');
         tag.className = 'bg-white/8 text-white text-[11px] px-2.5 py-1 rounded-lg flex items-center gap-1.5 border border-white/5';
-        tag.innerHTML = `<span>${sanitize(cat)}</span><button onclick="removeCategory(${JSON.stringify(cat)})" class="text-red-400 hover:text-red-300 font-bold cursor-pointer leading-none">×</button>`;
-        container.appendChild(tag);
+        tag.innerHTML = `<span>${sanitize(cat)}</span><button onclick="removeCategory(${JSON.stringify(cat)})" class="text-red-400 hover:text-red-300 font-bold cursor-pointer">×</button>`;
+        c.appendChild(tag);
     });
 }
-
-// ─── CATEGORIAS ───────────────────────────────────────────
-function addNewCategory() {
+async function addNewCategory() {
     const input = document.getElementById('newCategoryInput');
     const val   = input.value.trim();
     if (!val) return;
-    if (S.categories.some(c => c.toLowerCase() === val.toLowerCase())) {
-        showToast('Categoria já existe.', 'error'); return;
-    }
+    if (S.categories.some(c=>c.toLowerCase()===val.toLowerCase())) { showToast('Categoria já existe.','error'); return; }
     S.categories.push(val);
-    DS.setCategories(S.categories);
-    input.value = '';
-    renderCategoryTabs();
-    renderCategoriesSelect();
-    renderCategoriesAdminList();
-    showToast(`Categoria "${val}" adicionada!`);
+    try {
+        await DS.saveSettings({ categories: S.categories });
+        input.value=''; renderCategoryTabs(); renderCategoriesSelect(); renderCategoriesAdminList();
+        showToast(`Categoria "${val}" adicionada!`);
+    } catch { S.categories.pop(); showToast('Erro ao salvar.','error'); }
+}
+async function removeCategory(cat) {
+    if (S.apps.some(a=>a.category===cat)) { showToast('Existem apps nesta categoria.','error'); return; }
+    const prev = [...S.categories];
+    S.categories = S.categories.filter(c=>c!==cat);
+    try {
+        await DS.saveSettings({ categories: S.categories });
+        if (S.selectedCategory===cat) S.selectedCategory='Todos';
+        renderCategoryTabs(); renderCategoriesSelect(); renderCategoriesAdminList(); renderApps();
+        showToast('Categoria removida.');
+    } catch { S.categories=prev; showToast('Erro.','error'); }
 }
 
-function removeCategory(cat) {
-    if (S.apps.some(a => a.category === cat)) {
-        showToast('Existem apps nesta categoria. Remova-os primeiro.', 'error'); return;
-    }
-    S.categories = S.categories.filter(c => c !== cat);
-    DS.setCategories(S.categories);
-    if (S.selectedCategory === cat) S.selectedCategory = 'Todos';
-    renderCategoryTabs();
-    renderCategoriesSelect();
-    renderCategoriesAdminList();
-    renderApps();
-    showToast('Categoria removida.');
-}
-
-// ─── ALTERAR SENHA ADM ────────────────────────────────────
+// ════════════════════════════════════════════════
+// ALTERAR SENHA ADM (Firebase Auth updatePassword)
+// ════════════════════════════════════════════════
 function openChangePasswordModal() {
-    ['cpCurrent','cpNew','cpConfirm'].forEach(id => document.getElementById(id).value = '');
+    ['cpCurrent','cpNew','cpConfirm'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('changePassModal').classList.remove('view-hidden');
 }
-
-function closeChangePasswordModal() {
-    document.getElementById('changePassModal').classList.add('view-hidden');
-}
-
-function submitChangePassword() {
+function closeChangePasswordModal() { document.getElementById('changePassModal').classList.add('view-hidden'); }
+async function submitChangePassword() {
     const current = document.getElementById('cpCurrent').value;
     const nw      = document.getElementById('cpNew').value.trim();
     const confirm = document.getElementById('cpConfirm').value;
-
-    if (current !== S.config.adminPassword) { showToast('Senha atual incorreta.', 'error'); return; }
-    if (nw.length < 4)                       { showToast('Nova senha muito curta (mín. 4 caracteres).', 'error'); return; }
-    if (nw !== confirm)                       { showToast('As senhas não coincidem.', 'error'); return; }
-
-    S.config.adminPassword = nw;
-    DS.setConfig(S.config);
-    closeChangePasswordModal();
-    showToast('Senha alterada com sucesso!');
+    if (nw.length < 6)  { showToast('Mín. 6 caracteres.','error'); return; }
+    if (nw !== confirm) { showToast('As senhas não coincidem.','error'); return; }
+    try {
+        const user = auth.currentUser;
+        const cred = firebase.auth.EmailAuthProvider.credential(user.email, current);
+        await user.reauthenticateWithCredential(cred);
+        await user.updatePassword(nw);
+        closeChangePasswordModal();
+        showToast('Senha alterada com sucesso!');
+    } catch(err) {
+        const isWrong = ['auth/wrong-password','auth/invalid-credential'].includes(err.code);
+        showToast(isWrong ? 'Senha atual incorreta.' : 'Erro: '+err.message, 'error');
+    }
 }
 
-// ─── BACKUP ───────────────────────────────────────────────
+// ════════════════════════════════════════════════
+// BACKUP
+// ════════════════════════════════════════════════
 function exportData() {
-    // Senha ADM não é exportada por segurança
-    const backup = {
-        version:    '2.0',
-        exported:   new Date().toISOString(),
-        apps:       S.apps,
-        users:      S.users,
-        categories: S.categories,
-    };
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const a    = document.createElement('a');
-    a.href     = URL.createObjectURL(blob);
-    a.download = `Backup_Fenix_Hub_v2_${Date.now()}.json`;
+    const backup = { version:'3.0', exported: new Date().toISOString(), apps:S.apps, users:S.users, categories:S.categories };
+    const a = document.createElement('a');
+    a.href  = URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)], {type:'application/json'}));
+    a.download = `Backup_Fenix_Hub_v3_${Date.now()}.json`;
     a.click();
-    showToast('Backup exportado com sucesso!');
+    showToast('Backup exportado!');
 }
-
-function importData(event) {
+async function importData(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = async e => {
         try {
             const data = JSON.parse(e.target.result);
-            if (!data.apps || !data.categories) { showToast('Arquivo inválido.', 'error'); return; }
-            openConfirmModal('Restaurar backup? Os dados atuais serão substituídos.', () => {
-                S.apps       = data.apps;
-                S.categories = data.categories;
-                S.users      = data.users || S.users;
-                DS.setApps(S.apps);
-                DS.setCategories(S.categories);
-                DS.setUsers(S.users);
-                renderCategoryTabs();
-                renderCategoriesSelect();
-                renderCategoriesAdminList();
-                renderUsersTable();
-                renderApps();
-                renderLoginProfiles();
-                showToast('Backup restaurado com sucesso!');
+            if (!data.apps || !data.categories) { showToast('Arquivo inválido.','error'); return; }
+            openConfirmModal('Restaurar backup? Os dados atuais serão substituídos.', async () => {
+                showToast('Importando...');
+                try {
+                    let batch = db.batch();
+                    (await db.collection('apps').get()).docs.forEach(d=>batch.delete(d.ref));
+                    data.apps.forEach(app=>batch.set(db.collection('apps').doc(String(app.id)),app));
+                    await batch.commit();
+                    if (data.users) {
+                        batch = db.batch();
+                        (await db.collection('users').get()).docs.forEach(d=>batch.delete(d.ref));
+                        data.users.forEach(u=>batch.set(db.collection('users').doc(String(u.id)),u));
+                        await batch.commit();
+                    }
+                    await DS.saveSettings({ categories: data.categories });
+                    await loadAllData();
+                    renderCategoryTabs(); renderCategoriesSelect(); renderCategoriesAdminList();
+                    renderUsersTable(); renderApps(); renderLoginProfiles();
+                    showToast('Backup restaurado!');
+                } catch(err) { showToast('Erro ao importar.','error'); console.error(err); }
             });
-        } catch { showToast('Erro ao ler o arquivo.', 'error'); }
+        } catch { showToast('Arquivo inválido.','error'); }
     };
     reader.readAsText(file);
-    event.target.value = '';
+    event.target.value='';
 }
 
-// ─── UTILITÁRIOS ─────────────────────────────────────────
-
-// Previne XSS: sempre use sanitize() antes de inserir texto em innerHTML
+// ════════════════════════════════════════════════
+// UTILITÁRIOS
+// ════════════════════════════════════════════════
 function sanitize(str) {
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(String(str ?? '')));
-    return div.innerHTML;
+    const d = document.createElement('div');
+    d.appendChild(document.createTextNode(String(str??'')));
+    return d.innerHTML;
 }
-
-function showToast(msg, type = 'success') {
-    const toast = document.getElementById('toast');
+function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
     document.getElementById('toastMsg').textContent = msg;
-    document.getElementById('toastLed').className   =
-        `w-2 h-2 rounded-full flex-shrink-0 ${type === 'error' ? 'bg-red-400' : 'bg-emerald-400'}`;
-    toast.style.borderColor = type === 'error'
-        ? 'rgba(239,68,68,0.3)' : 'rgba(60,216,154,0.25)';
-    toast.classList.remove('translate-y-20','opacity-0','pointer-events-none');
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() =>
-        toast.classList.add('translate-y-20','opacity-0','pointer-events-none'), 3200);
+    document.getElementById('toastLed').className = `w-2 h-2 rounded-full flex-shrink-0 ${type==='error'?'bg-red-400':'bg-emerald-400'}`;
+    t.style.borderColor = type==='error'?'rgba(239,68,68,0.3)':'rgba(60,216,154,0.25)';
+    t.classList.remove('translate-y-20','opacity-0','pointer-events-none');
+    clearTimeout(t._t);
+    t._t = setTimeout(()=>t.classList.add('translate-y-20','opacity-0','pointer-events-none'),3200);
 }
-
 function openConfirmModal(text, cb) {
     document.getElementById('confirmText').textContent = text;
     document.getElementById('confirmModal').classList.remove('view-hidden');
     confirmCallback = cb;
 }
-
 function closeConfirmModal(accepted) {
     document.getElementById('confirmModal').classList.add('view-hidden');
     if (accepted && confirmCallback) confirmCallback();
     confirmCallback = null;
 }
-
 function closeAllModals() {
     ['pinModal','adminPasswordModal','changePassModal','userModal','confirmModal']
-        .forEach(id => document.getElementById(id).classList.add('view-hidden'));
+        .forEach(id=>document.getElementById(id).classList.add('view-hidden'));
 }
 </script>
 </body>
